@@ -9,7 +9,13 @@ DB_NAME = "database.db"
 def create_app():
     app = Flask(__name__)
     app.config['SECRET_KEY'] = 'hsycgsyh jdjhcjdjc'
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_NAME}'
+
+    # 🔴 FIX: use absolute path to instance/database.db
+    BASE_DIR = path.abspath(path.dirname(__file__))
+    INSTANCE_DIR = path.join(BASE_DIR, "..", "instance")
+    DB_PATH = path.join(INSTANCE_DIR, DB_NAME)
+
+    app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DB_PATH}"
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     db.init_app(app)
@@ -34,8 +40,9 @@ def create_app():
 
     return app
 
+
 def create_database(app):
-    if not path.exists(DB_NAME):
-        with app.app_context():
-            db.create_all()
-        print("Created Database!")
+    # Always ensure tables exist in the correct DB
+    with app.app_context():
+        db.create_all()
+        print("Database checked / created")

@@ -22,13 +22,16 @@ def login():
                 flash('Incorrect password, Try again!', category='error')
         else:
             flash('Email does not exist!', category='error')
+
     return render_template("login.html", user=current_user)
+
 
 @auth.route('/logout')
 @login_required
 def logout():
     logout_user()
     return redirect(url_for('auth.login'))
+
 
 @auth.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -41,19 +44,24 @@ def signup():
         user = User.query.filter_by(email=email).first()
         if user:
             flash('Email already exists!', category='error')
-        elif len(email) < 4:
+        elif not email or len(email) < 4:
             flash("Email must be greater than 3 characters.", category="error")
-        elif len(first_name) < 2:
+        elif not first_name or len(first_name) < 2:
             flash("First name must be greater than 1 character.", category="error")
         elif password1 != password2:
             flash("Passwords don't match.", category="error")
-        elif len(password1) < 7:
-            flash("Password must be atleast 7 characters.", category="error")
+        elif not password1 or len(password1) < 7:
+            flash("Password must be at least 7 characters.", category="error")
         else:
-            new_user = User(email=email, first_name=first_name, password=generate_password_hash(password1))
+            new_user = User(
+                email=email,
+                first_name=first_name,
+                password=generate_password_hash(password1)
+            )
             db.session.add(new_user)
             db.session.commit()
-            login_user(user, remember=True)
+
+            login_user(new_user, remember=True)
             flash("Account Created!", category="success")
             return redirect(url_for('views.home'))
 
